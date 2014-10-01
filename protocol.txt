@@ -1,0 +1,12 @@
+Communication Protocol:
+
+Client Message Format:
+
+    Normal Message:  <msgLen>$<destIP>":"<destPort>$<Message>
+    Query list of Clients: 4$<"LIST">
+
+
+Server Message Format:
+
+    Normal recieve message addressed to client:  <msgLen><"RX">$<srcIP>":"<sourcePort>$<Message>
+    Send list of connected clients: <msgLen>$<"LIST">$<Client1>$<Client2> ....
