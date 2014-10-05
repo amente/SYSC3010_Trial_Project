@@ -1,9 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
 import socket, threading
 
-
-TCP_IP = '127.0.0.1'
+TCP_IP = '0.0.0.0'
 TCP_PORT = 9009
 BUFFER_SIZE = 64 
 
@@ -19,30 +18,39 @@ class ClientThread(threading.Thread):
         self.socket = socket
         print "[+] New Client thread started for "+ip+":"+str(port)
 
-    def run(self):       	
-	while 1:
+    def run(self):
+        while 1:
             data = self.socket.recv(BUFFER_SIZE)
-             
-	    if(data[0:4] == "4$LIST"):
-                msg = "LIST"+"$"+str(connectedClients.keys()).lstrip('[').rstrip(']').replace(', ','$');
-                self.socket.send(str(len(msg))+"$"+msg)
+
+            recvmsg = data            
+            if(str(recvmsg[0:4]).lstrip("['").rstrip("']") == 'LIST'):
+                print "LIST recieved"
+                sendmsg = "LIST"+"$"+str(connectedClients.keys()).lstrip('[').rstrip(']').replace(', ','$');
+                self.socket.send(sendmsg)
                 continue
-            elif(len(data.split('$'))!=2):
-		if data == '':
+            
+            print str(recvmsg[0:2]).lstrip("['").rstrip("']")
+           
+        
+            if(len(data.split('$'))!=2):
+                if data == '':
                     break                    
-		print "[+] Invalid data recieved: "+ data
-                continue
-            print data
-	    msglen,dest, msg = data.split('$');
+                print "[+] Invalid data recieved: "+ data
+                continue            
+            
+            dest = recvmsg.split('$')[0].strip()
+            msg = recvmsg.split('$')[1].strip()
+            print len(dest)
+            print dest
+            print connectedClients
+            print dest in connectedClients
             print "[+] Message received from "+str(self.ip)+":"+str(self.port) + " To " + dest
-	    if dest in connectedClients:
-                msg = "RX$"+str(self.ip)+':'+str(self.port)+"$"+msg
-	        connectedClients[dest].send(str(len(msg))+"$"+msg);  
+            if  dest in connectedClients:                
+                sendmsg = "RX$"+str(self.ip)+':'+str(self.port)+"$"+msg
+                connectedClients[dest].send(sendmsg);  
                 print "[+] Message proxied to "+ dest 
-            else:
-                print connectedClients
-                print len(dest)
-                print "[ERROR] "+dest+ " is not currently connected"           		
+            else:           
+                print "[ERROR] "+dest+ " is not currently connected"
         self.socket.close()
         "[-] Connection with "+ip+":"+str(port) + " is terminated." 
 
@@ -58,5 +66,4 @@ while 1:
     newClient= ClientThread(ip, port, clientsock)
     newClient.start()
     connectedClients[str(ip)+':'+str(port)]  = clientsock
-	
     

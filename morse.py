@@ -42,13 +42,23 @@ morsetab = {
         ' ': ' ',               '_': '..--.-',
 }
 
-def send(char,pin_number):
-	for i in morsetab[char]:
-		if char == '.':
-			p.digital_write(pin_number, 0)
-		elif char == '-':
-			p.digital_write(pin_number, 1)
-	sleep(1);
-			
+DELAY=1
 
+def send(char,pin_number):
+	for c in morsetab[char]:
+		if c == '.':
+			p.digital_write(pin_number, 1)
+			sleep(DELAY/3.0)
+			p.digital_write(pin_number, 0)
+			sleep(DELAY/3.0)
+		elif c == '-':
+			p.digital_write(pin_number, 1)
+			sleep(DELAY)
+			p.digital_write(pin_number, 0)
+			sleep(DELAY)
+	sleep(DELAY/3)
+			
+if __name__ == "__main__":
+	for c in "SOS":
+		send(c, 0)
 
